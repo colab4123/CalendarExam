@@ -1,318 +1,390 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>캘린더 Todo 앱</title>
-  <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <title>캘린더 Todo 앱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        height: 100vh;
-        background-color: #f5f5f5;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
 
-    .container {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        margin: 20px auto;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
 
-    .calendar-section {
-        flex: 1;
-        padding: 20px;
-        border-right: 1px solid #eee;
-    }
+        .calendar-section {
+            flex: 1;
+            padding: 20px;
+            border-right: 1px solid #eee;
+        }
 
-    .task-section {
-        flex: 1;
-        padding: 20px;
-    }
+        .task-section {
+            flex: 1;
+            padding: 20px;
+        }
 
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-    .calendar-nav {
-        display: flex;
-        gap: 10px;
-    }
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
 
-    .nav-btn {
-        padding: 5px 10px;
-        border: none;
-        background-color: #007bff;
-        color: white;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+        .nav-btn {
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-    }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
 
-    .calendar-cell {
-        aspect-ratio: 1;
-        border: 1px solid #eee;
-        padding: 5px;
-        cursor: pointer;
-        position: relative;
-    }
+        .calendar-cell {
+            aspect-ratio: 1;
+            border: 1px solid #eee;
+            padding: 5px;
+            cursor: pointer;
+            position: relative;
+        }
 
-    .calendar-cell:hover {
-        background-color: #f0f0f0;
-    }
+        .calendar-cell:hover {
+            background-color: #f0f0f0;
+        }
 
-    .calendar-cell.selected {
-        background-color: #e3f2fd;
-    }
+        .calendar-cell.selected {
+            background-color: #e3f2fd;
+        }
 
-    .task-dot {
-        width: 6px;
-        height: 6px;
-        background-color: #007bff;
-        border-radius: 50%;
-        position: absolute;
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+        .calendar-cell.today {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+        }
 
-    .task-form {
-        margin-bottom: 20px;
-    }
+        .calendar-cell.weekend {
+            color: #dc3545;
+        }
 
-    .task-input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
+        .task-count {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .task-list {
-        list-style: none;
-    }
+        .task-form {
+            margin-bottom: 20px;
+        }
 
-    .task-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-    }
+        .task-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
 
-    .delete-btn {
-        padding: 5px 10px;
-        border: none;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-  </style>
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-content {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .task-checkbox {
+            margin-right: 10px;
+        }
+
+        .task-content {
+            flex-grow: 1;
+        }
+
+        .delete-btn {
+            padding: 5px 10px;
+            border: none;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <div class="calendar-section">
-    <div class="calendar-header">
-      <h2 id="currentMonth"></h2>
-      <div class="calendar-nav">
-        <button class="nav-btn" id="prevMonth">이전</button>
-        <button class="nav-btn" id="nextMonth">다음</button>
-      </div>
+    <div class="container">
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <h2 id="currentMonth"></h2>
+                <div class="calendar-nav">
+                    <button class="nav-btn" id="prevMonth">이전</button>
+                    <button class="nav-btn" id="nextMonth">다음</button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendar"></div>
+        </div>
+        <div class="task-section">
+            <h2>할 일</h2>
+            <div class="task-form">
+                <input type="text" class="task-input" id="taskInput" placeholder="새로운 할 일을 입력하세요">
+                <button class="nav-btn" id="addTask">추가</button>
+            </div>
+            <ul class="task-list" id="taskList"></ul>
+        </div>
     </div>
-    <div class="calendar-grid" id="calendar"></div>
-  </div>
-  <div class="task-section">
-    <h2>할 일</h2>
-    <div class="task-form">
-      <input type="text" class="task-input" id="taskInput" placeholder="새로운 할 일을 입력하세요">
-      <button class="nav-btn" id="addTask">추가</button>
-    </div>
-    <ul class="task-list" id="taskList"></ul>
-  </div>
-</div>
 
-<script>
-  class CalendarTodo {
-      constructor() {
-          this.currentDate = new Date();
-          this.selectedDate = null;
-          this.tasks = {};
+    <script>
+        class CalendarTodo {
+            constructor() {
+                this.currentDate = new Date();
+                this.selectedDate = null;
+                this.tasks = {};
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                this.renderCalendar();
+            }
 
-          this.initializeElements();
-          this.attachEventListeners();
-          this.renderCalendar();
-      }
+            initializeElements() {
+                this.calendarEl = document.getElementById('calendar');
+                this.currentMonthEl = document.getElementById('currentMonth');
+                this.prevMonthBtn = document.getElementById('prevMonth');
+                this.nextMonthBtn = document.getElementById('nextMonth');
+                this.taskInput = document.getElementById('taskInput');
+                this.addTaskBtn = document.getElementById('addTask');
+                this.taskList = document.getElementById('taskList');
+            }
 
-      initializeElements() {
-          this.calendarEl = document.getElementById('calendar');
-          this.currentMonthEl = document.getElementById('currentMonth');
-          this.prevMonthBtn = document.getElementById('prevMonth');
-          this.nextMonthBtn = document.getElementById('nextMonth');
-          this.taskInput = document.getElementById('taskInput');
-          this.addTaskBtn = document.getElementById('addTask');
-          this.taskList = document.getElementById('taskList');
-      }
+            attachEventListeners() {
+                this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
+                this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+                this.addTaskBtn.addEventListener('click', () => this.addTask());
+            }
 
-      attachEventListeners() {
-          this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
-          this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
-          this.addTaskBtn.addEventListener('click', () => this.addTask());
-      }
+            formatDate(date) {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
 
-      formatDate(date) {
-          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      }
+            isToday(date) {
+                const today = new Date();
+                return date.getDate() === today.getDate() &&
+                       date.getMonth() === today.getMonth() &&
+                       date.getFullYear() === today.getFullYear();
+            }
 
-      renderCalendar() {
-          const year = this.currentDate.getFullYear();
-          const month = this.currentDate.getMonth();
-          const firstDay = new Date(year, month, 1);
-          const lastDay = new Date(year, month + 1, 0);
+            isWeekend(date) {
+                const day = date.getDay();
+                return day === 0 || day === 6;
+            }
 
-          this.currentMonthEl.textContent = `${year}년 ${month + 1}월`;
-          this.calendarEl.innerHTML = '';
+            renderCalendar() {
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                
+                this.currentMonthEl.textContent = `${year}년 ${month + 1}월`;
+                this.calendarEl.innerHTML = '';
 
-          // 요일 헤더 추가
-          const days = ['일', '월', '화', '수', '목', '금', '토'];
-          days.forEach(day => {
-              const dayEl = document.createElement('div');
-              dayEl.textContent = day;
-              dayEl.style.textAlign = 'center';
-              dayEl.style.fontWeight = 'bold';
-              this.calendarEl.appendChild(dayEl);
-          });
+                // 요일 헤더 추가
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                days.forEach(day => {
+                    const dayEl = document.createElement('div');
+                    dayEl.textContent = day;
+                    dayEl.style.textAlign = 'center';
+                    dayEl.style.fontWeight = 'bold';
+                    if (day === '일' || day === '토') {
+                        dayEl.style.color = '#dc3545';
+                    }
+                    this.calendarEl.appendChild(dayEl);
+                });
 
-          // 이전 달의 마지막 날짜들
-          for (let i = 0; i < firstDay.getDay(); i++) {
-              const cell = document.createElement('div');
-              cell.className = 'calendar-cell';
-              this.calendarEl.appendChild(cell);
-          }
+                // 이전 달의 마지막 날짜들
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-cell';
+                    this.calendarEl.appendChild(cell);
+                }
 
-          // 현재 달의 날짜들
-          for (let i = 1; i <= lastDay.getDate(); i++) {
-              const cell = document.createElement('div');
-              cell.className = 'calendar-cell';
-              cell.textContent = i;
+                // 현재 달의 날짜들
+                for (let i = 1; i <= lastDay.getDate(); i++) {
+                    const currentDate = new Date(year, month, i);
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-cell';
+                    if (this.isWeekend(currentDate)) {
+                        cell.classList.add('weekend');
+                    }
+                    if (this.isToday(currentDate)) {
+                        cell.classList.add('today');
+                    }
+                    cell.textContent = i;
+                    
+                    const currentDateStr = this.formatDate(currentDate);
+                    
+                    if (this.tasks[currentDateStr]?.length > 0) {
+                        const taskCount = document.createElement('div');
+                        taskCount.className = 'task-count';
+                        taskCount.textContent = this.tasks[currentDateStr].length;
+                        cell.appendChild(taskCount);
+                    }
 
-              const currentDateStr = this.formatDate(new Date(year, month, i));
+                    cell.addEventListener('click', () => this.selectDate(new Date(year, month, i)));
+                    
+                    if (this.selectedDate && 
+                        i === this.selectedDate.getDate() && 
+                        month === this.selectedDate.getMonth() && 
+                        year === this.selectedDate.getFullYear()) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    this.calendarEl.appendChild(cell);
+                }
+            }
 
-              if (this.tasks[currentDateStr]?.length > 0) {
-                  const dot = document.createElement('div');
-                  dot.className = 'task-dot';
-                  cell.appendChild(dot);
-              }
+            changeMonth(delta) {
+                this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+                this.renderCalendar();
+            }
 
-              cell.addEventListener('click', () => this.selectDate(new Date(year, month, i)));
+            selectDate(date) {
+                this.selectedDate = date;
+                this.renderCalendar();
+                this.renderTasks();
+            }
 
-              if (this.selectedDate &&
-                  i === this.selectedDate.getDate() &&
-                  month === this.selectedDate.getMonth() &&
-                  year === this.selectedDate.getFullYear()) {
-                  cell.classList.add('selected');
-              }
+            renderTasks() {
+                if (!this.selectedDate) return;
 
-              this.calendarEl.appendChild(cell);
-          }
-      }
+                const dateStr = this.formatDate(this.selectedDate);
+                this.taskList.innerHTML = '';
 
-      changeMonth(delta) {
-          this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-          this.renderCalendar();
-      }
+                if (this.tasks[dateStr]) {
+                    this.tasks[dateStr].forEach((task, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'task-item' + (task.completed ? ' completed' : '');
+                        li.innerHTML = `
+                            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                            <span class="task-content">${task.content}</span>
+                            <button class="delete-btn" data-index="${index}">삭제</button>
+                        `;
+                        
+                        const checkbox = li.querySelector('.task-checkbox');
+                        checkbox.addEventListener('change', () => this.toggleTask(index));
+                        
+                        li.querySelector('.delete-btn').addEventListener('click', () => this.deleteTask(index));
+                        this.taskList.appendChild(li);
+                    });
+                }
+            }
 
-      selectDate(date) {
-          this.selectedDate = date;
-          this.renderCalendar();
-          this.renderTasks();
-      }
+            addTask() {
+                if (!this.selectedDate || !this.taskInput.value.trim()) return;
 
-      renderTasks() {
-          if (!this.selectedDate) return;
+                const dateStr = this.formatDate(this.selectedDate);
+                if (!this.tasks[dateStr]) {
+                    this.tasks[dateStr] = [];
+                }
+                
+                this.tasks[dateStr].push({
+                    content: this.taskInput.value.trim(),
+                    completed: false
+                });
+                this.taskInput.value = '';
+                
+                this.renderCalendar();
+                this.renderTasks();
+                this.saveTasks();
+            }
 
-          const dateStr = this.formatDate(this.selectedDate);
-          this.taskList.innerHTML = '';
+            toggleTask(index) {
+                if (!this.selectedDate) return;
 
-          if (this.tasks[dateStr]) {
-              this.tasks[dateStr].forEach((task, index) => {
-                  const li = document.createElement('li');
-                  li.className = 'task-item';
-                  li.innerHTML = `
-                      <span>${task}</span>
-                      <button class="delete-btn" data-index="${index}">삭제</button>
-                  `;
+                const dateStr = this.formatDate(this.selectedDate);
+                if (this.tasks[dateStr] && this.tasks[dateStr][index]) {
+                    this.tasks[dateStr][index].completed = !this.tasks[dateStr][index].completed;
+                    this.renderTasks();
+                    this.saveTasks();
+                }
+            }
 
-                  li.querySelector('.delete-btn').addEventListener('click', () => this.deleteTask(index));
-                  this.taskList.appendChild(li);
-              });
-          }
-      }
+            deleteTask(index) {
+                if (!this.selectedDate) return;
 
-      addTask() {
-          if (!this.selectedDate || !this.taskInput.value.trim()) return;
+                const dateStr = this.formatDate(this.selectedDate);
+                if (this.tasks[dateStr]) {
+                    this.tasks[dateStr].splice(index, 1);
+                    if (this.tasks[dateStr].length === 0) {
+                        delete this.tasks[dateStr];
+                    }
+                }
 
-          const dateStr = this.formatDate(this.selectedDate);
-          if (!this.tasks[dateStr]) {
-              this.tasks[dateStr] = [];
-          }
+                this.renderCalendar();
+                this.renderTasks();
+                this.saveTasks();
+            }
 
-          this.tasks[dateStr].push(this.taskInput.value.trim());
-          this.taskInput.value = '';
+            saveTasks() {
+                localStorage.setItem('calendarTasks', JSON.stringify(this.tasks));
+            }
 
-          this.renderCalendar();
-          this.renderTasks();
-          this.saveTasks();
-      }
+            loadTasks() {
+                const savedTasks = localStorage.getItem('calendarTasks');
+                if (savedTasks) {
+                    this.tasks = JSON.parse(savedTasks);
+                    this.renderCalendar();
+                }
+            }
+        }
 
-      deleteTask(index) {
-          if (!this.selectedDate) return;
-
-          const dateStr = this.formatDate(this.selectedDate);
-          if (this.tasks[dateStr]) {
-              this.tasks[dateStr].splice(index, 1);
-              if (this.tasks[dateStr].length === 0) {
-                  delete this.tasks[dateStr];
-              }
-          }
-
-          this.renderCalendar();
-          this.renderTasks();
-          this.saveTasks();
-      }
-
-      saveTasks() {
-          localStorage.setItem('calendarTasks', JSON.stringify(this.tasks));
-      }
-
-      loadTasks() {
-          const savedTasks = localStorage.getItem('calendarTasks');
-          if (savedTasks) {
-              this.tasks = JSON.parse(savedTasks);
-              this.renderCalendar();
-          }
-      }
-  }
-
-  // 앱 초기화
-  const app = new CalendarTodo();
-  app.loadTasks();
-</script>
+        // 앱 초기화
+        const app = new CalendarTodo();
+        app.loadTasks();
+    </script>
 </body>
 </html>
