@@ -158,233 +158,233 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="calendar-section">
-            <div class="calendar-header">
-                <h2 id="currentMonth"></h2>
-                <div class="calendar-nav">
-                    <button class="nav-btn" id="prevMonth">이전</button>
-                    <button class="nav-btn" id="nextMonth">다음</button>
-                </div>
+<div class="container">
+    <div class="calendar-section">
+        <div class="calendar-header">
+            <h2 id="currentMonth"></h2>
+            <div class="calendar-nav">
+                <button class="nav-btn" id="prevMonth">이전</button>
+                <button class="nav-btn" id="nextMonth">다음</button>
             </div>
-            <div class="calendar-grid" id="calendar"></div>
         </div>
-        <div class="task-section">
-            <h2>할 일</h2>
-            <div class="task-form">
-                <input type="text" class="task-input" id="taskInput" placeholder="새로운 할 일을 입력하세요">
-                <button class="nav-btn" id="addTask">추가</button>
-            </div>
-            <ul class="task-list" id="taskList"></ul>
-        </div>
+        <div class="calendar-grid" id="calendar"></div>
     </div>
+    <div class="task-section">
+        <h2>할 일</h2>
+        <div class="task-form">
+            <input type="text" class="task-input" id="taskInput" placeholder="새로운 할 일을 입력하세요">
+            <button class="nav-btn" id="addTask">추가</button>
+        </div>
+        <ul class="task-list" id="taskList"></ul>
+    </div>
+</div>
 
-    <script>
-        class CalendarTodo {
-            constructor() {
-                this.currentDate = new Date();
-                this.selectedDate = null;
-                this.tasks = {};
-                
-                this.initializeElements();
-                this.attachEventListeners();
-                this.renderCalendar();
+<script>
+    class CalendarTodo {
+        constructor() {
+            this.currentDate = new Date();
+            this.selectedDate = null;
+            this.tasks = {};
+
+            this.initializeElements();
+            this.attachEventListeners();
+            this.renderCalendar();
+        }
+
+        initializeElements() {
+            this.calendarEl = document.getElementById('calendar');
+            this.currentMonthEl = document.getElementById('currentMonth');
+            this.prevMonthBtn = document.getElementById('prevMonth');
+            this.nextMonthBtn = document.getElementById('nextMonth');
+            this.taskInput = document.getElementById('taskInput');
+            this.addTaskBtn = document.getElementById('addTask');
+            this.taskList = document.getElementById('taskList');
+        }
+
+        attachEventListeners() {
+            this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
+            this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+            this.addTaskBtn.addEventListener('click', () => this.addTask());
+        }
+
+        formatDate(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6;
+        }
+
+        renderCalendar() {
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            this.currentMonthEl.textContent = `${year}년 ${month + 1}월`;
+            this.calendarEl.innerHTML = '';
+
+            // 요일 헤더 추가
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            days.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = day;
+                dayEl.style.textAlign = 'center';
+                dayEl.style.fontWeight = 'bold';
+                if (day === '일' || day === '토') {
+                    dayEl.style.color = '#dc3545';
+                }
+                this.calendarEl.appendChild(dayEl);
+            });
+
+            // 이전 달의 마지막 날짜들
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                this.calendarEl.appendChild(cell);
             }
 
-            initializeElements() {
-                this.calendarEl = document.getElementById('calendar');
-                this.currentMonthEl = document.getElementById('currentMonth');
-                this.prevMonthBtn = document.getElementById('prevMonth');
-                this.nextMonthBtn = document.getElementById('nextMonth');
-                this.taskInput = document.getElementById('taskInput');
-                this.addTaskBtn = document.getElementById('addTask');
-                this.taskList = document.getElementById('taskList');
-            }
+            // 현재 달의 날짜들
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const currentDate = new Date(year, month, i);
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                if (this.isWeekend(currentDate)) {
+                    cell.classList.add('weekend');
+                }
+                if (this.isToday(currentDate)) {
+                    cell.classList.add('today');
+                }
+                cell.textContent = i;
 
-            attachEventListeners() {
-                this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
-                this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
-                this.addTaskBtn.addEventListener('click', () => this.addTask());
-            }
+                const currentDateStr = this.formatDate(currentDate);
 
-            formatDate(date) {
-                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            }
-
-            isToday(date) {
-                const today = new Date();
-                return date.getDate() === today.getDate() &&
-                       date.getMonth() === today.getMonth() &&
-                       date.getFullYear() === today.getFullYear();
-            }
-
-            isWeekend(date) {
-                const day = date.getDay();
-                return day === 0 || day === 6;
-            }
-
-            renderCalendar() {
-                const year = this.currentDate.getFullYear();
-                const month = this.currentDate.getMonth();
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                
-                this.currentMonthEl.textContent = `${year}년 ${month + 1}월`;
-                this.calendarEl.innerHTML = '';
-
-                // 요일 헤더 추가
-                const days = ['일', '월', '화', '수', '목', '금', '토'];
-                days.forEach(day => {
-                    const dayEl = document.createElement('div');
-                    dayEl.textContent = day;
-                    dayEl.style.textAlign = 'center';
-                    dayEl.style.fontWeight = 'bold';
-                    if (day === '일' || day === '토') {
-                        dayEl.style.color = '#dc3545';
-                    }
-                    this.calendarEl.appendChild(dayEl);
-                });
-
-                // 이전 달의 마지막 날짜들
-                for (let i = 0; i < firstDay.getDay(); i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'calendar-cell';
-                    this.calendarEl.appendChild(cell);
+                if (this.tasks[currentDateStr]?.length > 0) {
+                    const taskCount = document.createElement('div');
+                    taskCount.className = 'task-count';
+                    taskCount.textContent = this.tasks[currentDateStr].length;
+                    cell.appendChild(taskCount);
                 }
 
-                // 현재 달의 날짜들
-                for (let i = 1; i <= lastDay.getDate(); i++) {
-                    const currentDate = new Date(year, month, i);
-                    const cell = document.createElement('div');
-                    cell.className = 'calendar-cell';
-                    if (this.isWeekend(currentDate)) {
-                        cell.classList.add('weekend');
-                    }
-                    if (this.isToday(currentDate)) {
-                        cell.classList.add('today');
-                    }
-                    cell.textContent = i;
-                    
-                    const currentDateStr = this.formatDate(currentDate);
-                    
-                    if (this.tasks[currentDateStr]?.length > 0) {
-                        const taskCount = document.createElement('div');
-                        taskCount.className = 'task-count';
-                        taskCount.textContent = this.tasks[currentDateStr].length;
-                        cell.appendChild(taskCount);
-                    }
+                cell.addEventListener('click', () => this.selectDate(new Date(year, month, i)));
 
-                    cell.addEventListener('click', () => this.selectDate(new Date(year, month, i)));
-                    
-                    if (this.selectedDate && 
-                        i === this.selectedDate.getDate() && 
-                        month === this.selectedDate.getMonth() && 
-                        year === this.selectedDate.getFullYear()) {
-                        cell.classList.add('selected');
-                    }
-                    
-                    this.calendarEl.appendChild(cell);
-                }
-            }
-
-            changeMonth(delta) {
-                this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-                this.renderCalendar();
-            }
-
-            selectDate(date) {
-                this.selectedDate = date;
-                this.renderCalendar();
-                this.renderTasks();
-            }
-
-            renderTasks() {
-                if (!this.selectedDate) return;
-
-                const dateStr = this.formatDate(this.selectedDate);
-                this.taskList.innerHTML = '';
-
-                if (this.tasks[dateStr]) {
-                    this.tasks[dateStr].forEach((task, index) => {
-                        const li = document.createElement('li');
-                        li.className = 'task-item' + (task.completed ? ' completed' : '');
-                        li.innerHTML = `
-                            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
-                            <span class="task-content">${task.content}</span>
-                            <button class="delete-btn" data-index="${index}">삭제</button>
-                        `;
-                        
-                        const checkbox = li.querySelector('.task-checkbox');
-                        checkbox.addEventListener('change', () => this.toggleTask(index));
-                        
-                        li.querySelector('.delete-btn').addEventListener('click', () => this.deleteTask(index));
-                        this.taskList.appendChild(li);
-                    });
-                }
-            }
-
-            addTask() {
-                if (!this.selectedDate || !this.taskInput.value.trim()) return;
-
-                const dateStr = this.formatDate(this.selectedDate);
-                if (!this.tasks[dateStr]) {
-                    this.tasks[dateStr] = [];
-                }
-                
-                this.tasks[dateStr].push({
-                    content: this.taskInput.value.trim(),
-                    completed: false
-                });
-                this.taskInput.value = '';
-                
-                this.renderCalendar();
-                this.renderTasks();
-                this.saveTasks();
-            }
-
-            toggleTask(index) {
-                if (!this.selectedDate) return;
-
-                const dateStr = this.formatDate(this.selectedDate);
-                if (this.tasks[dateStr] && this.tasks[dateStr][index]) {
-                    this.tasks[dateStr][index].completed = !this.tasks[dateStr][index].completed;
-                    this.renderTasks();
-                    this.saveTasks();
-                }
-            }
-
-            deleteTask(index) {
-                if (!this.selectedDate) return;
-
-                const dateStr = this.formatDate(this.selectedDate);
-                if (this.tasks[dateStr]) {
-                    this.tasks[dateStr].splice(index, 1);
-                    if (this.tasks[dateStr].length === 0) {
-                        delete this.tasks[dateStr];
-                    }
+                if (this.selectedDate &&
+                    i === this.selectedDate.getDate() &&
+                    month === this.selectedDate.getMonth() &&
+                    year === this.selectedDate.getFullYear()) {
+                    cell.classList.add('selected');
                 }
 
-                this.renderCalendar();
-                this.renderTasks();
-                this.saveTasks();
-            }
-
-            saveTasks() {
-                localStorage.setItem('calendarTasks', JSON.stringify(this.tasks));
-            }
-
-            loadTasks() {
-                const savedTasks = localStorage.getItem('calendarTasks');
-                if (savedTasks) {
-                    this.tasks = JSON.parse(savedTasks);
-                    this.renderCalendar();
-                }
+                this.calendarEl.appendChild(cell);
             }
         }
 
-        // 앱 초기화
-        const app = new CalendarTodo();
-        app.loadTasks();
-    </script>
+        changeMonth(delta) {
+            this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+            this.renderCalendar();
+        }
+
+        selectDate(date) {
+            this.selectedDate = date;
+            this.renderCalendar();
+            this.renderTasks();
+        }
+
+        renderTasks() {
+            if (!this.selectedDate) return;
+
+            const dateStr = this.formatDate(this.selectedDate);
+            this.taskList.innerHTML = '';
+
+            if (this.tasks[dateStr]) {
+                this.tasks[dateStr].forEach((task, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'task-item' + (task.completed ? ' completed' : '');
+                    li.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                        <span class="task-content">${task.content}</span>
+                        <button class="delete-btn" data-index="${index}">삭제</button>
+                    `;
+
+                    const checkbox = li.querySelector('.task-checkbox');
+                    checkbox.addEventListener('change', () => this.toggleTask(index));
+
+                    li.querySelector('.delete-btn').addEventListener('click', () => this.deleteTask(index));
+                    this.taskList.appendChild(li);
+                });
+            }
+        }
+
+        addTask() {
+            if (!this.selectedDate || !this.taskInput.value.trim()) return;
+
+            const dateStr = this.formatDate(this.selectedDate);
+            if (!this.tasks[dateStr]) {
+                this.tasks[dateStr] = [];
+            }
+
+            this.tasks[dateStr].push({
+                content: this.taskInput.value.trim(),
+                completed: false
+            });
+            this.taskInput.value = '';
+
+            this.renderCalendar();
+            this.renderTasks();
+            this.saveTasks();
+        }
+
+        toggleTask(index) {
+            if (!this.selectedDate) return;
+
+            const dateStr = this.formatDate(this.selectedDate);
+            if (this.tasks[dateStr] && this.tasks[dateStr][index]) {
+                this.tasks[dateStr][index].completed = !this.tasks[dateStr][index].completed;
+                this.renderTasks();
+                this.saveTasks();
+            }
+        }
+
+        deleteTask(index) {
+            if (!this.selectedDate) return;
+
+            const dateStr = this.formatDate(this.selectedDate);
+            if (this.tasks[dateStr]) {
+                this.tasks[dateStr].splice(index, 1);
+                if (this.tasks[dateStr].length === 0) {
+                    delete this.tasks[dateStr];
+                }
+            }
+
+            this.renderCalendar();
+            this.renderTasks();
+            this.saveTasks();
+        }
+
+        saveTasks() {
+            localStorage.setItem('calendarTasks', JSON.stringify(this.tasks));
+        }
+
+        loadTasks() {
+            const savedTasks = localStorage.getItem('calendarTasks');
+            if (savedTasks) {
+                this.tasks = JSON.parse(savedTasks);
+                this.renderCalendar();
+            }
+        }
+    }
+
+    // 앱 초기화
+    const app = new CalendarTodo();
+    app.loadTasks();
+</script>
 </body>
 </html>
